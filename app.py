@@ -3,7 +3,7 @@ import google.generativeai as genai
 from PIL import Image
 
 # 1. 配置你的 Gemini API Key
-genai.configure(api_key="AIzaSyB6fHHVcozzSAfc6uVLXRA1qI8dVv-XDD0")
+genai.configure(api_key="你的KEY")
 
 # 2. 页面设置 (UI)
 st.set_page_config(page_title="Wyckoff Lens AI", layout="wide")
@@ -48,4 +48,5 @@ if uploaded_file is not None:
                 st.error(f"分析出错啦: {e}")
 
 else:
+
     st.info("💡 请先上传一张包含成交量的 K 线图。建议使用 TradingView 的截图。")
