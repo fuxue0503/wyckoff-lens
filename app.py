@@ -237,8 +237,8 @@ if st.session_state.get('is_cruising', False):
                 email_cooldown_passed = (current_time_sec - st.session_state['last_email_time']) >= 3600  # 60 分钟冷却
                 
                 if enable_email and receiver_email and conf_score >= 70:
-                    # 只有在 60 分钟冷却完毕，或者发生了极其重大的结构切换时才发邮件
-                    if email_cooldown_passed or trigger_b:
+                    # 只有在 60 分钟冷却完毕，且检测到极重大的关键相位切换/异动特征时，才允许发送预警
+                    if email_cooldown_passed and (trigger_b or trigger_c):
                         email_subject = f"🚨 [Sentinel API] {target_symbol} 侦测到巨鲸意图! ({core_sig})"
                         email_body = f"""
 Wyckoff Sentinel - 自动作战指令下达

@@ -148,8 +148,8 @@ def analyze_wyckoff(df):
             if current['close'] > current['Support'] and current['volume'] < breakdown_vol:
                 is_valid_spring = True
                 
-                # 条件4：聚类过滤，15 根 K 线内连续出现，保留最深的一个
-                if last_spring_idx != -100 and (i - last_spring_idx) <= 15:
+                # 条件4：聚类过滤，20 根 K 线内连续出现，保留最深的一个
+                if last_spring_idx != -100 and (i - last_spring_idx) <= 20:
                     if breakdown_low < last_spring_low:
                         # 当前的 Spring 更深，撤销上一个的标记
                         old_sig = df.at[df.index[last_spring_idx], 'Signal']
@@ -304,49 +304,80 @@ def save_alert_state(state):
     with open(ALERT_STATE_FILE, "w") as f:
         json.dump(state, f, indent=2)
 
-# SMTP 邮件发送模块 (通过 Streamlit Secrets 安全加载)
-try:
-    SMTP_SERVER = st.secrets.get("SMTP_SERVER", "smtp.gmail.com")
-    SMTP_PORT = st.secrets.get("SMTP_PORT", 587)
-    SENDER_EMAIL = st.secrets.get("SENDER_EMAIL", "your_email@gmail.com")
-    EMAIL_PASSWORD = st.secrets.get("EMAIL_PASSWORD", "your_app_password")
-except FileNotFoundError:
-    # 兼容本地无 secrets 配置的环境
-    SMTP_SERVER = "smtp.gmail.com"
-    SMTP_PORT = 587
-    SENDER_EMAIL = "your_email@gmail.com"
-    EMAIL_PASSWORD = "your_app_password"
+# SMTP 邮件发送模块 (支持 Streamlit Secrets 的 [email] 结构层级与本地 OS 环境变量兼容)
+def get_email_config():
+    """获取动态邮件配置，屏蔽由于不同环境下找不到环境变量导致的奔溃"""
+    config = {
+        "server": "smtp.gmail.com",
+        "port": 587,
+        "user": "your_email@gmail.com",
+        "password": "your_app_password"
+    }
+    
+    # 尝试从 Streamlit.secrets 提取 (云端主路径)
+    try:
+        if "email" in st.secrets:
+            config["server"] = st.secrets["email"].get("server", config["server"])
+            config["port"] = st.secrets["email"].get("port", config["port"])
+            config["user"] = st.secrets["email"].get("user", config["user"])
+            config["password"] = st.secrets["email"].get("password", config["password"])
+        else:
+            # 兼容扁平化配置
+            config["server"] = st.secrets.get("SMTP_SERVER", config["server"])
+            config["port"] = st.secrets.get("SMTP_PORT", config["port"])
+            config["user"] = st.secrets.get("SENDER_EMAIL", config["user"])
+            config["password"] = st.secrets.get("EMAIL_PASSWORD", config["password"])
+            
+    except Exception:
+        # 兼容本地 `.env` 无 Streamlit 服务环境
+        config["server"] = os.environ.get("SMTP_SERVER", config["server"])
+        config["port"] = int(os.environ.get("SMTP_PORT", config["port"]))
+        config["user"] = os.environ.get("SENDER_EMAIL", config["user"])
+        config["password"] = os.environ.get("EMAIL_PASSWORD", config["password"])
+
+    return config
 
 def send_signal_email(subject, body, receiver_email):
     """
     通过 SMTP 协议发送告警邮件。
-    如果配置为空或发件失败，安全捕获异常并仅在终端打印警告。
+    如果配置为空或发件失败，安全捕获异常并仅在终端打印警告以避免云端崩溃。
     """
+    config = get_email_config()
     print(f"[{datetime.now().strftime('%H:%M:%S')}] 尝试送达邮件至: {receiver_email} ...")
     
-    if SENDER_EMAIL == "your_email@gmail.com" or EMAIL_PASSWORD == "your_app_password":
-        print(f"[{datetime.now().strftime('%H:%M:%S')}] ⚠️ 邮件发送取消: 请先在 sentinel.py 中配置真实的 SENDER_EMAIL 和 EMAIL_PASSWORD。")
+    if config["user"] == "your_email@gmail.com" or config["password"] == "your_app_password":
+        print(f"[{datetime.now().strftime('%H:%M:%S')}] ⚠️ 邮件发送取消: 系统侦测到您尚未在 secrets 中填充真实的 SENDER_EMAIL 与 APP_PASSWORD。")
         return False
         
     try:
         msg = MIMEMultipart()
-        msg['From'] = f"Wyckoff Sentinel <{SENDER_EMAIL}>"
+        msg['From'] = f"Wyckoff Sentinel <{config['user']}>"
         msg['To'] = receiver_email
         msg['Subject'] = subject
 
         msg.attach(MIMEText(body, 'plain'))
 
-        server = smtplib.SMTP(SMTP_SERVER, SMTP_PORT)
+        # 初始化连接与严格的安全握手 (StartTLS)
+        server = smtplib.SMTP(config['server'], config['port'])
+        server.ehlo()
         server.starttls()
-        server.login(SENDER_EMAIL, EMAIL_PASSWORD)
+        server.login(config['user'], config['password'])
+        
+        # 投递炸弹
         text = msg.as_string()
-        server.sendmail(SENDER_EMAIL, receiver_email, text)
+        server.sendmail(config['user'], receiver_email, text)
         server.quit()
         
         print(f"[{datetime.now().strftime('%H:%M:%S')}] ✅ 邮件已成功送达至: {receiver_email}")
         return True
+    except smtplib.SMTPAuthenticationError:
+        print(f"[{datetime.now().strftime('%H:%M:%S')}] ❌ 邮件发送失败: 账号认证异常！请核对您是否启用了两步验证，并使用的是应用专用密码 (App Password) 而非您的登录密码。邮箱地址是否由于近期异常活动被所在服务商硬封锁。")
+        return False
+    except smtplib.SMTPConnectError as e:
+        print(f"[{datetime.now().strftime('%H:%M:%S')}] ❌ 邮件发送失败: SMTP 服务器失联 (拒绝连接)，错误信息: {e}")
+        return False
     except Exception as e:
-        print(f"[{datetime.now().strftime('%H:%M:%S')}] ❌ 邮件发送失败: {e}")
+        print(f"[{datetime.now().strftime('%H:%M:%S')}] ❌ 邮件发送失败: 出现了未知致命错误: {e}")
         return False
 
 def trigger_alerts_if_needed(symbol, summary):
