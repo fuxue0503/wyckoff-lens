@@ -5,7 +5,7 @@ import time
 from sentinel import fetch_market_data, analyze_wyckoff, generate_llm_report, send_signal_email
 
 # 页面配置
-st.set_page_config(page_title="Wyckoff Sentinel 数据核心", layout="wide")
+st.set_page_config(page_title="Wyckoff Sentinel", layout="wide")
 
 # 主界面标题
 st.title("🛡️ Wyckoff Sentinel: 数据与算法全息看板")
@@ -68,7 +68,7 @@ if st.session_state.get('is_cruising', False):
     
     # 获取实时流数据
     proxies = st.session_state.get('proxies', None)
-    with st.spinner(f"正在建立连接并抓取 {target_symbol} 行情..."):
+    with st.spinner('哨兵正在初始化高维度数据流...'):
         df_raw = fetch_market_data(target_symbol, target_timeframe, limit=250, proxies=proxies)
     
     if df_raw.empty:
