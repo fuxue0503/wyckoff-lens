@@ -1,0 +1,104 @@
+[
+    {
+        "timestamp": "2026-02-26 19:33:03",
+        "symbol": "BTC/USDT",
+        "signal": "Spring",
+        "price": 67287.3671875
+    },
+    {
+        "timestamp": "2026-02-26 19:42:35",
+        "symbol": "BTC/USDT",
+        "signal": "LPS LPSY",
+        "price": 67135.9609375
+    },
+    {
+        "timestamp": "2026-02-26 19:46:42",
+        "symbol": "ETH/USDT",
+        "signal": "LPS",
+        "price": 2016.159912109375
+    },
+    {
+        "timestamp": "2026-02-26 20:00:03",
+        "symbol": "BTC/USDT",
+        "signal": "LPS LPSY",
+        "price": 67204.7109375
+    },
+    {
+        "timestamp": "2026-02-26 20:00:06",
+        "symbol": "ETH/USDT",
+        "signal": "LPS",
+        "price": 2013.413330078125
+    },
+    {
+        "timestamp": "2026-02-26 21:08:42",
+        "symbol": "BTC/USDT",
+        "signal": "LPS LPSY",
+        "price": 67449.4609375
+    },
+    {
+        "timestamp": "2026-02-26 21:08:47",
+        "symbol": "ETH/USDT",
+        "signal": "LPS",
+        "price": 2026.144775390625
+    },
+    {
+        "timestamp": "2026-02-26 21:31:28",
+        "symbol": "BTC/USDT",
+        "signal": "LPS LPSY",
+        "price": 67400.2265625
+    },
+    {
+        "timestamp": "2026-02-27 13:20:37",
+        "symbol": "ETH/USDT",
+        "signal": "LPS",
+        "price": 1924.48583984375
+    },
+    {
+        "timestamp": "2026-02-27 13:20:40",
+        "symbol": "ETH/USDT",
+        "signal": "BC",
+        "price": 1924.48583984375
+    },
+    {
+        "timestamp": "2026-02-27 13:39:23",
+        "symbol": "BTC/USDT",
+        "signal": "LPS LPSY",
+        "price": 65634.65625
+    },
+    {
+        "timestamp": "2026-02-27 13:48:50",
+        "symbol": "BTC/USDT",
+        "signal": "BC",
+        "price": 65562.875
+    },
+    {
+        "timestamp": "2026-02-27 13:57:35",
+        "symbol": "BTC/USDT",
+        "signal": "LPS LPSY",
+        "price": 65266.15625
+    },
+    {
+        "timestamp": "2026-02-27 13:57:52",
+        "symbol": "BTC/USDT",
+        "signal": "BC",
+        "price": 65266.15625
+    },
+    {
+        "timestamp": "2026-02-27 13:59:24",
+        "symbol": "ETH/USDT",
+        "signal": "BC",
+        "price": 1918.0804443359375
+    },
+    {
+        "timestamp": "2026-02-27 14:11:02",
+        "symbol": "BTC/USDT",
+        "signal": "LPS LPSY",
+        "price": 65382.93359375
+    },
+    {
+        "timestamp": "2026-02-27 14:11:10",
+        "symbol": "BTC/USDT",
+        "signal": "BC",
+        "price": 65382.93359375
+    }
+]
